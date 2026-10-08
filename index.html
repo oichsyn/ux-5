@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+
+        *{box-sizing: border-box;}
+
+        body{
+            margin: 0;
+            overflow: hidden;
+            background: #eeeeee;
+            font-family: Arial;
+        }
+
+
+        /*공간*/
+
+        #space{
+            position: relative;
+
+            width: 100vw;
+            height: 80vh;
+
+            overflow: hidden;
+
+            border-bottom: 2px solid #999999;
+        }
+
+
+        /*공*/
+
+        .ball{
+            position: absolute;
+
+            border-radius: 50%;
+
+            filter: saturate(0%);
+
+            transition: filter 0.3s;
+        }
+
+
+        /*컨트롤*/
+
+        #control{
+            width: 100%;
+            height: 20vh;
+
+            background: white;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            gap: 70px;
+        }
+
+
+        .controlBox{
+            width: 230px;
+        }
+
+
+        .title{
+            font-size: 13px;
+            font-weight: bold;
+
+            letter-spacing: 2px;
+
+            margin-bottom: 10px;
+        }
+
+
+        input{
+            width: 100%;
+        }
+
+
+        .text{
+            display: flex;
+            justify-content: space-between;
+
+            margin-top: 5px;
+
+            font-size: 10px;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- 공 움직이는 공간 -->
+
+    <div id="space"></div>
+
+
+
+    <!-- 슬라이더 -->
+
+    <div id="control">
+
+
+        <!-- GRAVITY -->
+
+        <div class="controlBox">
+
+            <div class="title">
+                GRAVITY
+            </div>
+
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                id="gravity">
+
+            <div class="text">
+                <span>FLOOR</span>
+                <span>CEILING</span>
+            </div>
+
+        </div>
+
+
+
+        <!-- SATURATION -->
+
+        <div class="controlBox">
+
+            <div class="title">
+                SATURATION
+            </div>
+
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                id="saturation">
+
+            <div class="text">
+                <span>MONO</span>
+                <span>COLOR</span>
+            </div>
+
+        </div>
+
+
+
+        <!-- SIZE -->
+
+        <div class="controlBox">
+
+            <div class="title">
+                SIZE
+            </div>
+
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                id="size">
+
+            <div class="text">
+                <span>SMALL</span>
+                <span>BIG</span>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <script>
+
+
+        /* =================================
+           기본 설정
+           ================================= */
+
+
+        let space = document.getElementById("space");
+       
+        let ballCount = 18;
+
+        let balls = [];
+
+        let colors = [
+
+            "#ff5252",
+            "#448aff",
+            "#ffd740",
+            "#69f0ae",
+            "#e040fb",
+            "#ff6e40",
+
+            "#7c4dff",
+            "#18ffff",
+            "#ff4081",
+            "#b2ff59",
+            "#ffab40",
+            "#40c4ff",
+
+            "#ff5252",
+            "#69f0ae",
+            "#e040fb",
+            "#ffd740",
+            "#448aff",
+            "#ff6e40"
+        ];
+
+
+        let sizes = [
+            35,50,65,45,80,55,
+            40,70,90,45,60,35,
+            75,50,100,40,65,55
+        ];
+
+
+
+
+        // 공 만들기
+
+
+        for(let i = 0; i < ballCount; i++){
+
+
+            let circle = document.createElement("div");
+
+
+            circle.className = "ball";
+
+
+            circle.style.background = colors[i];
+
+            circle.style.filter = "saturate(0%)";
+
+
+
+            space.appendChild(circle);
+
+
+            // 공 크기
+
+            let radius = sizes[i] / 2;
+
+
+
+            // balls에 저장
+
+            balls.push({
+
+                element: circle,
+
+                radius: radius,
+
+                originalRadius: radius,
+
+
+                // 처음 위치
+
+                x:
+                    60 +
+                    Math.random() *
+                    (window.innerWidth - 120),
+
+
+                y:
+                    30 +
+                    Math.random() * 150,
+
+
+                // 속도
+
+                vx: 0,
+                vy: 0
+
+            });
+
+        }
+
+
+
+
+        // 중력
+
+        let gravityPower = 0.12;
+
+
+
+        gravity.oninput = function(){
+
+
+            let value = Number(gravity.value);
+
+
+
+            gravityPower =
+                0.12 - value * 0.0024;
+
+
+
+            /*
+            슬라이더 힘 추가,
+            공 흔들림
+            */
+
+
+            for(let i = 0; i < balls.length; i++){
+
+
+                balls[i].vx +=
+                    (Math.random() - 0.5) * 0.15;
+
+
+                balls[i].vy +=
+                    (Math.random() - 0.5) * 0.15;
+
+            }
+
+        };
+
+
+
+
+        // 채도
+
+        saturation.oninput = function(){
+
+
+            let value = saturation.value;
+
+
+            for(let i = 0; i < balls.length; i++){
+
+
+                balls[i].element.style.filter =
+                    "saturate(" + value + "%)";
+
+            }
+
+        };
+
+
+
+
+        // 사이즈
+
+        size.oninput = function(){
+
+
+            let value = Number(size.value);
+
+
+            let scale =
+                1 + value * 0.007;
+
+
+
+            for(let i = 0; i < balls.length; i++){
+
+
+                balls[i].radius =
+                    balls[i].originalRadius * scale;
+
+            }
+
+        };
+
+
+
+
+        // 충돌
+
+
+        function collision(){
+
+
+            for(let i = 0; i < balls.length; i++){
+
+
+                for(let j = i + 1; j < balls.length; j++){
+
+
+                    let ball1 = balls[i];
+
+                    let ball2 = balls[j];
+
+
+
+                    // 공 거리
+
+                    let dx =
+                        ball2.x - ball1.x;
+
+                    let dy =
+                        ball2.y - ball1.y;
+
+
+                    let distance =
+                        Math.sqrt(
+                            dx * dx +
+                            dy * dy
+                        );
+
+
+
+                    // 닿는 거리
+
+                    let minimumDistance =
+                        ball1.radius +
+                        ball2.radius;
+
+
+
+                    // 겹침
+
+                    if(distance < minimumDistance){
+
+                        
+                        // 공 중심 완전히 같지X
+
+                        if(distance == 0){
+                            distance = 0.1;
+                            dx = 0.1;
+                        }
+
+
+
+                        // 충돌
+
+                        let nx =
+                            dx / distance;
+
+                        let ny =
+                            dy / distance;
+
+
+
+                        // 겹침
+
+                        let overlap =
+                            minimumDistance - distance;
+
+                        ball1.x -=
+                            nx * overlap / 2;
+
+                        ball1.y -=
+                            ny * overlap / 2;
+
+
+                        ball2.x +=
+                            nx * overlap / 2;
+
+                        ball2.y +=
+                            ny * overlap / 2;
+
+                        let bounce = 0.08;
+
+
+
+                        // 상대 속도
+
+                        let relativeX =
+                            ball2.vx - ball1.vx;
+
+                        let relativeY =
+                            ball2.vy - ball1.vy;
+
+
+
+                        let speed =
+                            relativeX * nx +
+                            relativeY * ny;
+
+
+
+                        // 튕기는 속도
+
+                        if(speed < 0){
+
+
+                            let impulse =
+                                -(1 + bounce) *
+                                speed / 2;
+
+
+                            ball1.vx -=
+                                impulse * nx;
+
+                            ball1.vy -=
+                                impulse * ny;
+
+
+                            ball2.vx +=
+                                impulse * nx;
+
+                            ball2.vy +=
+                                impulse * ny;
+
+                        }
+
+
+                    }
+
+
+                }
+
+
+            }
+
+
+        }
+
+
+
+
+        // 벽 충돌
+
+        function wallCollision(ball){
+
+
+            let width =
+                space.clientWidth;
+
+
+            let height =
+                space.clientHeight;
+
+
+
+            /*
+            왼쪽
+            */
+
+            if(ball.x - ball.radius < 0){
+
+                ball.x = ball.radius;
+
+                ball.vx *= -0.1;
+
+            }
+
+
+
+            /*
+            오른쪽
+            */
+
+            if(ball.x + ball.radius > width){
+
+                ball.x =
+                    width - ball.radius;
+
+                ball.vx *= -0.1;
+
+            }
+
+
+
+            /*
+            위
+            */
+
+            if(ball.y - ball.radius < 0){
+
+                ball.y =
+                    ball.radius;
+
+                ball.vy *= -0.08;
+
+            }
+
+
+
+            /*
+            아래
+            */
+
+            if(ball.y + ball.radius > height){
+
+                ball.y =
+                    height - ball.radius;
+
+                ball.vy *= -0.08;
+
+            }
+
+
+        }
+
+
+
+
+        // 움직임
+
+
+        function animate(){
+
+
+            for(let i = 0; i < balls.length; i++){
+
+
+                let ball = balls[i];
+
+
+                ball.vy += gravityPower;
+
+
+
+                /*
+                위치
+                */
+
+                ball.x += ball.vx;
+
+                ball.y += ball.vy;
+
+
+
+                /*
+                마찰
+                */
+
+                ball.vx *= 0.985;
+
+                ball.vy *= 0.985;
+
+
+                wallCollision(ball);
+
+            }
+
+
+
+            /*
+            공끼리 충돌
+            */
+            collision();
+            collision();
+            collision();
+
+
+
+            // 화면표시
+
+            for(let i = 0; i < balls.length; i++){
+
+                let ball = balls[i];
+
+                let diameter =
+                    ball.radius * 2;
+
+
+                ball.element.style.width =
+                    diameter + "px";
+
+                ball.element.style.height =
+                    diameter + "px";
+
+                ball.element.style.left =
+                    ball.x - ball.radius + "px";
+
+                ball.element.style.top =
+                    ball.y - ball.radius + "px";
+            }
+
+            requestAnimationFrame(animate);
+
+        }
+
+
+        animate();
+
+
+    </script>
+
+</body>
+</html>
